@@ -1,5 +1,6 @@
 #+TITLE: Advent of Code 2021
 
-My solutions.  All programs read their input from stdin.  Spoilers
-ahead, obviously.  The Haskell version is the most complete, there are
-bits of Racket as well, bits of Rust may appear at some point.
+My solutions, mostly in Rust (in =raoc2021=).  Also bits of Racket and Haskell.
+# All programs read their input from stdin.  Spoilers
+# ahead, obviously.  The Haskell version is the most complete, there are
+# bits of Racket as well, bits of Rust may appear at some point.
