@@ -59,16 +59,19 @@ fn part_a(days: u64) -> u64 {
         for i in 0..children {
             state.push(8);
         }
-        println!("After {} days: {:?}, count {}", i,
-                 make_state(&state), state.len());
+        // println!("After {} days: {:?}, count {}", i,
+        //          make_state(&state), state.len());
     }
     state.len() as u64
 }
 
 fn main() {
-    println!("Part 1 (method A): {}", part_a(80));
-    println!("Part 1 (method B): {}", part_b(80));
-    println!("Part 1 (method B): {}", part_b(256));
+    println!("Part 1 (method A)…");
+    println!(" = {}", part_a(80));
+    println!("Part 1 (method B)…");
+    println!(" = {}", part_b(80));
+    println!("Part 2 (method B)…");
+    println!(" = {}", part_b(256));
     // println!("Part 2 (method B): {}", part_b(256));
     // let mut v = vec![1,2,3];
     // v = v.into_iter().map(|x| x+1).collect();
