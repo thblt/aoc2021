@@ -45,7 +45,6 @@ fn score_line_b(line: &str) -> u64 {
             _ => panic!("Very bad input"),
         }
     }
-    // println!(" {}", score);
     score
 }
 
