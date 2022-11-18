@@ -55,11 +55,7 @@ impl CaveSystem {
         self.edges.iter().filter(|p| &p.0 == from).map(|p| p.1).collect()
     }
 
-
     fn do_walk(&self, start: &Cave, goal: &Cave, revisit_small: bool, mut way: Vec<Cave>, ways: &mut Vec<Vec<Cave>> ) {
-        // We're at start, want to go to `end`.  We enumerate possible
-        // future moves, and explore them all.
-        // println!("Walking from {}.", self.cave_name(start).unwrap());
         way.push(*start);
 
         if start==goal {
@@ -67,17 +63,15 @@ impl CaveSystem {
             return
         }
 
-        // println!("Keep walking from {}.", self.cave_name(start).unwrap());
-
         let no_go: Vec<&Cave> = way.iter().filter(|c| !c.large).collect();
         for next in self.next_caves(start) {
             if !no_go.contains(&&next) {
                 self.do_walk(&next, goal, revisit_small, way.clone(), ways)
 
             } else if revisit_small && next.idx > 1 {
-                // @FIXME This ^^^^^^^^^^^^^^^ is a trick: because we
-                // insert start and end manually before we parse the
-                // input, they get the IDs 0 and 1.
+                // @FIXME This......^^^^^^^^^^^^^^^ is a trick:
+                // because we insert start and end manually before we
+                // parse the input, they get the IDs 0 and 1.
                 self.do_walk(&next, goal, false, way.clone(), ways)
             }
         }
@@ -107,7 +101,6 @@ fn main() {
     let mut cs = CaveSystem::new();
     let start = cs.insert("start");
     let end = cs.insert("end");
-    println!("reading…");
 
     for line in read_lines("../inputs/12.txt").unwrap() {
         let line = line.unwrap();
@@ -118,7 +111,6 @@ fn main() {
     }
 
     cs.print_edges();
-
 
     let paths = cs.walk(&start,&end, false);
     let mut counta = 0;
