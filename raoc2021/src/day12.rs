@@ -36,10 +36,11 @@ impl CaveSystem {
             self.names_for.insert(name.clone(), new);
             self.names_rev.insert(new, name.clone());
             self.next_idx += 1;
-            println!("New cave named {} (returns {}): {:?}",
+            println!("Learned about a new {} cave called \"{}\" at id {}.",
+                     if new.large {"large"} else {"small"},
                      &name,
-                     self.cave_name(&new).unwrap(),
-                     new);
+                     new.idx
+            );
             new
         }
     }
