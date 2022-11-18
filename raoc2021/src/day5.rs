@@ -125,7 +125,7 @@ fn run() -> u32 {
     let mut space: Vec2D<u32> = Vec2D::new(x_max + 1, y_max + 1, 0);
 
     for l in lines {
-        if (l.x1 == l.x2 || l.y1 == l.y2) {
+        if l.x1 == l.x2 || l.y1 == l.y2 {
             let x1 = min(l.x1, l.x2);
             let x2 = max(l.x1, l.x2);
             let y1 = min(l.y1, l.y2);
