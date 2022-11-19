@@ -76,7 +76,7 @@ impl<T: Copy> Vec2D<T> {
     }
 
     pub fn draw_with(&self, func: &dyn Fn(&T) -> String) {
-        for i in 0..self.vec.capacity() {
+        for i in 0..self.vec.len() {
             if i % self.width == 0 {
                 println!("");
             }
