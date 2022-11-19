@@ -1,17 +1,17 @@
 use lib::*;
-use std::collections::{HashMap,HashSet};
+use std::collections::{HashMap, HashSet};
 
-#[derive(PartialEq, Eq,Copy,Clone,Debug,Hash)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Hash)]
 struct Cave {
     idx: usize,
-    large: bool
+    large: bool,
 }
 
 struct CaveSystem {
     next_idx: usize,
-    names_for: HashMap<String,Cave>,
-    names_rev: HashMap<Cave,String>,
-    edges: Vec<(Cave,Cave)>
+    names_for: HashMap<String, Cave>,
+    names_rev: HashMap<Cave, String>,
+    edges: Vec<(Cave, Cave)>,
 }
 
 impl CaveSystem {
@@ -20,7 +20,7 @@ impl CaveSystem {
             next_idx: 0,
             names_for: HashMap::new(),
             names_rev: HashMap::new(),
-            edges: vec!(),
+            edges: vec![],
         }
     }
 
@@ -36,10 +36,11 @@ impl CaveSystem {
             self.names_for.insert(name.clone(), new);
             self.names_rev.insert(new, name.clone());
             self.next_idx += 1;
-            println!("Learned about a new {} cave called \"{}\" at id {}.",
-                     if new.large {"large"} else {"small"},
-                     &name,
-                     new.idx
+            println!(
+                "Learned about a new {} cave called \"{}\" at id {}.",
+                if new.large { "large" } else { "small" },
+                &name,
+                new.idx
             );
             new
         }
@@ -48,27 +49,37 @@ impl CaveSystem {
     pub fn connect(&mut self, a: &str, b: &str) {
         let a = self.insert(a);
         let b = self.insert(b);
-        self.edges.push((a,b));
-        self.edges.push((b,a));
+        self.edges.push((a, b));
+        self.edges.push((b, a));
     }
 
     pub fn next_caves(&self, from: &Cave) -> Vec<Cave> {
-        self.edges.iter().filter(|p| &p.0 == from).map(|p| p.1).collect()
+        self.edges
+            .iter()
+            .filter(|p| &p.0 == from)
+            .map(|p| p.1)
+            .collect()
     }
 
-    fn do_walk(&self, start: &Cave, goal: &Cave, revisit_small: bool, mut way: Vec<Cave>, ways: &mut Vec<Vec<Cave>> ) {
+    fn do_walk(
+        &self,
+        start: &Cave,
+        goal: &Cave,
+        revisit_small: bool,
+        mut way: Vec<Cave>,
+        ways: &mut Vec<Vec<Cave>>,
+    ) {
         way.push(*start);
 
-        if start==goal {
+        if start == goal {
             ways.push(way);
-            return
+            return;
         }
 
         let no_go: Vec<&Cave> = way.iter().filter(|c| !c.large).collect();
         for next in self.next_caves(start) {
             if !no_go.contains(&&next) {
                 self.do_walk(&next, goal, revisit_small, way.clone(), ways)
-
             } else if revisit_small && next.idx > 1 {
                 // @FIXME This......^^^^^^^^^^^^^^^ is a trick:
                 // because we insert start and end manually before we
@@ -79,8 +90,8 @@ impl CaveSystem {
     }
 
     pub fn walk(&self, start: &Cave, goal: &Cave, revisit_small: bool) -> Vec<Vec<Cave>> {
-        let mut ret: Vec<Vec<Cave>> = vec!();
-        self.do_walk(start, goal, revisit_small, vec!(), &mut ret);
+        let mut ret: Vec<Vec<Cave>> = vec![];
+        self.do_walk(start, goal, revisit_small, vec![], &mut ret);
         ret
     }
 
@@ -90,9 +101,10 @@ impl CaveSystem {
 
     pub fn print_edges(&self) {
         for edge in &self.edges {
-            println!("{} <-> {}",
-                     self.cave_name(&edge.0).unwrap(),
-                     self.cave_name(&edge.1).unwrap(),
+            println!(
+                "{} <-> {}",
+                self.cave_name(&edge.0).unwrap(),
+                self.cave_name(&edge.1).unwrap(),
             )
         }
     }
@@ -113,7 +125,7 @@ fn main() {
 
     cs.print_edges();
 
-    let paths = cs.walk(&start,&end, false);
+    let paths = cs.walk(&start, &end, false);
     let mut counta = 0;
     for path in &paths {
         counta += 1;
@@ -123,7 +135,7 @@ fn main() {
         println!("");
     }
 
-    let paths = cs.walk(&start,&end, true);
+    let paths = cs.walk(&start, &end, true);
     let mut countb = 0;
     for path in &paths {
         countb += 1;
