@@ -78,7 +78,7 @@ impl<T: Copy> Vec2D<T> {
     pub fn draw_with(&self, func: &dyn Fn(&T) -> String) {
         for i in 0..self.vec.len() {
             if i % self.width == 0 {
-                println!("");
+                println!();
             }
             let val = self.vec[i];
             print!(
@@ -86,7 +86,7 @@ impl<T: Copy> Vec2D<T> {
                 func(&val)
             );
         }
-        println!("");
+        println!();
     }
 }
 
@@ -111,7 +111,7 @@ impl Vec2D<u8> {
     pub fn draw(&self) {
         for i in 0..self.vec.capacity() {
             if i % self.width == 0 {
-                println!("");
+                println!();
             }
             let val = self.vec[i];
             print!(
@@ -123,7 +123,7 @@ impl Vec2D<u8> {
                 }
             );
         }
-        println!("");
+        println!();
     }
 }
 

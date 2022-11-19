@@ -53,7 +53,7 @@ impl Vec2D<u32> {
     fn draw(&self) {
         for i in 0..self.vec.capacity() {
             if i % self.width == 0 {
-                println!("");
+                println!();
             }
             print!(
                 "{}",
@@ -72,7 +72,7 @@ impl Vec2D<u32> {
                 }
             );
         }
-        println!("");
+        println!();
     }
 }
 

@@ -96,7 +96,7 @@ fn grid_winning(g: &Grid) -> bool {
 fn grid_print(g: &Grid) {
     for i in 0..25 {
         if i % 5 == 0 {
-            print!("\n");
+            println!();
         }
 
         if g[i].marked {

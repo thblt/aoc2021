@@ -132,7 +132,7 @@ fn main() {
         for cave in path.into_iter() {
             print!("{} ", cs.cave_name(&cave).unwrap())
         }
-        println!("");
+        println!();
     }
 
     let paths = cs.walk(&start, &end, true);
@@ -142,7 +142,7 @@ fn main() {
         for cave in path.into_iter() {
             print!("{} ", cs.cave_name(&cave).unwrap())
         }
-        println!("");
+        println!();
     }
     println!("{} paths found (part 1).", counta);
     println!("{} paths found (part 2).", countb);
