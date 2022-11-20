@@ -49,6 +49,8 @@ fn compute() -> u64 {
         maybe_init(&mut state, key);
         *state.get_mut(&key).unwrap() += 1;
     }
+    // We alternate between two state maps to avoid allocating memory
+    // at each iteration.
     let mut state_odd = state.clone();
     let mut state_last = &state;
     for i in 1..=40 {
@@ -73,6 +75,10 @@ fn evolve(prev: &State, next: &mut State, rules: &Rules) {
 
     // Then, we iterate over the previous map.
     for (pair@(l, r), count) in prev {
+        // @FIXME This is nitpicking, but that rules.get() in a loop
+        // could probably be optimized away, eg by having the rule map
+        // *and* the pairs map be defined for all possible pairs ---
+        // there's just 100 of them.
         if let Some(new) =  rules.get(&pair) {
             maybe_init(next, (*l,*new));
             *next.get_mut(&(*l,*new)).unwrap() += count;
