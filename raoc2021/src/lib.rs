@@ -154,3 +154,9 @@ pub fn read_digit(c: char) -> u8 {
         _ => panic!("Bad input"),
     }
 }
+
+use std::ops::Sub;
+pub fn abs_diff<T: Copy + Ord + Sub>(a: T, b: T) -> <T as Sub>::Output  {
+    use std::cmp::{min,max};
+    max(a, b) - min (a, b)
+}
