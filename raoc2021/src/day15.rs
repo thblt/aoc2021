@@ -9,98 +9,155 @@
 // farthest.
 
 use lib::*;
-use std::cmp::Ord;
+use std::collections::{HashMap,HashSet};
+use std::hash::Hash;
+use std::fmt::Debug;
 
-/// Distance between two points, as the sum of the absolute difference
-/// of each coordinate.
-fn dist(x1: isize, y1: isize, x2: isize, y2: isize) -> isize {
-    abs_diff(x1, x2) + abs_diff(y1, y2)
-}
+fn dijkstra(graph: &Graph<usize>, start: usize, to: usize) -> HashMap<usize,usize> {
+    let mut dist: HashMap<usize,u32> = HashMap::new();
+    let mut prev: HashMap<usize,usize> = HashMap::new();
+    let mut nodes = graph.nodes.clone();
 
-struct Walker {
-    best_risk: Option<u32>,
-}
+    dist.insert(start, 0);
 
-fn walk(
-    maze: &Vec2D<u8>,
-    from: (isize, isize),
-    to: (isize, isize),
-    path: &mut Vec<(isize,isize)>,
-    risk: u32,
-    walker: &mut Walker,
-) {
-    let fx = from.0;
-    let fy = from.1;
-    let tx = to.0;
-    let ty = to.1;
+    println!("Now to the main loop;");
+    loop {
+        // println!("Dists are {:?}", dist);
+        let u = nodes.iter()
+            .filter(|node| dist.get(node).is_some())
+            .min_by_key(|node| dist.get(node).unwrap());
 
-    // If our total risk is greater than the best risk, this is a dead
-    // end.  We abort.
-    if let Some(best_risk) = walker.best_risk {
-        if best_risk < risk {
-            // println!("Excessive risk {} (best is {}), turning back.", risk, best_risk);
-            return;
-        }
-    }
+        if u.is_none() {
+            break }
+        let u = *u.unwrap();
 
-    // If we've arrived, we've set a new record for best risk.
-    if (fx == tx) && (fy == ty) {
-        if let Some(best_risk) = walker.best_risk {
-            if risk >= best_risk {
-                return
+        nodes.remove(&u);
+
+        for edge in graph.edges.iter().filter(|e| e.is_from(&u)) {
+            let v = edge.b;
+            if nodes.contains(&v) {
+                let alt = dist.get(&u).unwrap() + edge.cost;
+                if let Some(v_dist) = dist.get(&v) {
+                    if alt < *v_dist  {
+                        dist.insert(v, alt);
+                        prev.insert(v, u);
+                    }
+                } else {
+                    dist.insert(v, alt);
+                    prev.insert(v, u);
+                    if v % 50 == 0 {
+                        println!("Explored {}: {}", v, alt);
+
+                    }
+                }
             }
         }
-        println!("Reached! New best is {}, through:", risk);
-        let mut mz = maze.clone();
-        for point in path {
-            mz[*point] = 10;
-        }
-        mz[(tx,ty)] = 10;
-        mz.draw();
-        walker.best_risk = Some(risk);
-        return;
     }
-
-    let moves = [(fx - 1, fy), (fx + 1, fy), (fx, fy - 1), (fx, fy + 1)];
-    let mut candidates = moves
-        .iter()
-        .filter(|cand| maze.test_coords(cand.0, cand.1))
-        .filter(|cand| !path.contains(cand))
-        .collect::<Vec<&(isize, isize)>>();
-
-    candidates.sort_by(|a, b| isize::cmp(&dist(a.0, a.1, tx, ty), &dist(b.0, b.1, tx, ty)));
-
-    path.push((fx,fy));
-
-    // for c in &candidates {
-    //     print!("[{},{} distance={}]", c.0, c.1, dist(c.0, c.1, tx, ty));
-    // }
-    // println!();
-
-    for (cx, cy) in candidates {
-        let risk_extra = maze[(*cx, *cy)] as u32;
-        // println!("At {},{}, moving to {},{}.", fx, fy, cx, cy);
-        walk(maze, (*cx, *cy), (tx, ty), &mut path.clone(), risk + risk_extra, walker);
-    }
+    println!("{:?}", dist.get(&to));
+    prev
 }
 
 fn main() {
-    let maze = read_input();
+    let mut maze = multiply_input(&read_input());
+    let mut graph = Graph::<usize>::from_vec2d(&maze);
+
+    let from = maze.to_index((0,0));
+    let to = maze.to_index(((maze.height()-1) as isize, (maze.width()-1) as isize));
+    let prevs = dijkstra(&mut graph, from, to);
+
+        let mut current = to;
+    loop {
+        maze.vec[current] = 10;
+        if !prevs.contains_key(&current) {
+            break
+        }
+        current = *prevs.get(&current).unwrap();
+    };
     maze.draw();
-    let dest = (maze.width() as isize - 1, maze.height() as isize - 1);
-    let mut walker = Walker { best_risk: None };
+}
 
-    // BUG:
-    // At 9, 1, next steps: [(8, 1), (9, 2), (9, 0)]
-    println!("{}", dist(8,1,9,9));
-    println!("{}", dist(9,2,9,9));
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Hash, PartialOrd, Ord)]
+struct Edge<T: Debug + PartialEq + Eq + Copy + Hash + PartialOrd> {
+        a: T,
+        b: T,
+        cost: u32,
+}
 
-    println!("Trying to reach {},{}", &dest.0, &dest.1);
+impl<T: Debug + PartialEq + Eq + Copy + Hash + PartialOrd + Ord> Edge<T> {
+    pub fn new(a: T, b: T, cost: u32) -> Edge<T> {
+        Edge {
+            a,
+            b,
+            cost,
+        }
+    }
 
-    let mut path: Vec<(isize,isize)> = vec![];
-    walk(&maze, (0, 0), dest, &mut path, 0, &mut walker);
+    pub fn is_from(&self, t: &T) -> bool {
+        self.a == *t
+    }
+}
 
-    // println!("Part 1: {}", walker.best_risk.unwrap());
+#[derive(PartialEq, Eq, Clone)]
+struct Graph<E: Debug + Copy + Eq + PartialEq + PartialOrd + Hash> {
+    nodes: HashSet<E>,
+    edges: HashSet<Edge<E>>,
+}
+
+impl<E: Copy + Eq + PartialEq + Hash + PartialOrd + Debug> Graph<E> {
+    fn new() -> Graph<E> {
+        Graph {
+            nodes: HashSet::new(),
+            edges: HashSet::new(),
+        }
+    }
+
+    fn from_vec2d(vec: &Vec2D<u8>) -> Graph<usize> {
+        if vec.height() != vec.width() {
+            panic!("I wanted a square graph!");
+        }
+
+        let mut ret = Graph::<usize>::new();
+
+        for i in 0..vec.width() as isize {
+            for j in 0..=i {
+                for (x, y) in [(i, j), (j, i)] {
+                    let this_cost = vec[(x,y)] as u32;
+                    let id = vec.to_index((x, y));
+                    ret.nodes.insert(id);
+                    if x > 0 {
+                        ret.edges.insert(Edge::new(id, vec.to_index((x - 1, y)), vec[(x-1,y)] as u32));
+                        ret.edges.insert(Edge::new(vec.to_index((x - 1, y)), id, this_cost));
+                    }
+                    if y > 0 {
+                        ret.edges.insert(Edge::new(id, vec.to_index((x, y - 1)), vec[(x, y-1)] as u32));
+                        ret.edges.insert(Edge::new(vec.to_index((x, y - 1)), id, this_cost));
+                    }
+                }
+            }
+        }
+        ret
+    }
+}
+
+fn multiply_input(vec: &Vec2D<u8>) -> Vec2D<u8> {
+    let w1 = vec.width() as isize;
+    let h1 = vec.height() as isize;
+    let w2 = w1 * 5 as isize;
+    let h2 = h1 * 5 as isize;
+    let mut ret = Vec2D::<u8>::new(w2 as usize, h2 as usize, 0);
+
+    for x in 0..w2 {
+        for y in 0..h2 {
+            let nx = x/w1;
+            let ny = y/h1;
+            let mut val = vec[(x % w1, y % h1)] + (nx as u8) + (ny as u8);
+            if val > 9 {
+                val %= 9
+            }
+            ret[(x as isize,y as isize)] = val
+        }
+    }
+    ret
 }
 
 fn read_input() -> Vec2D<u8> {

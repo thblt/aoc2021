@@ -62,8 +62,6 @@ impl<T: Copy> Vec2D<T> {
             vec.push(value);
         }
 
-        println!("Vec size is {}", vec.len());
-
         Vec2D { vec, width, height }
     }
 
@@ -81,16 +79,11 @@ impl<T: Copy> Vec2D<T> {
                 println!();
             }
             let val = self.vec[i];
-            print!(
-                "{}",
-                func(&val)
-            );
+            print!("{}", func(&val));
         }
         println!();
     }
 }
-
-
 
 impl<T> Index<(isize, isize)> for Vec2D<T> {
     type Output = T;
