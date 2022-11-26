@@ -1,17 +1,3 @@
-/// We need to enumerate all initial velocities that will make the
-/// probe end inside the target.  This can be done by trial and error,
-/// the issue is that there are two variables (xv, yv).  I *think* that finding the bad cases will help
-
-/// If the drone falls short, that is ends under target_y2 before
-/// reaching target_x, each of (vx,vy) is a low bound to its other
-/// value.
-///
-/// If the drone goes too far, that is ends > target_x2 before
-/// reaching target_y1, each value is a high bound for the other.
-///
-/// If the drone goes through the target, just ignore the case.
-///
-
 struct Probe {
     x: i32,
     y: i32,
