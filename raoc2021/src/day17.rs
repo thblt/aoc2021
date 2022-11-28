@@ -24,7 +24,7 @@ impl Probe {
             if self.is_on_target(target) {
                 return Some(y_max);
             } else if self.is_lost(target) {
-                return None
+                return None;
             }
             self.step();
         }
@@ -43,15 +43,11 @@ impl Probe {
     }
 
     fn is_on_target(&self, t: &Target) -> bool {
-        (self.x >= t.x1)
-            && (self.x <= t.x2)
-            && (self.y >= t.y1)
-            && (self.y <= t.y2)
+        (self.x >= t.x1) && (self.x <= t.x2) && (self.y >= t.y1) && (self.y <= t.y2)
     }
 
     fn is_lost(&self, t: &Target) -> bool {
-        self.x > t.x2
-            || self.y < t.y1
+        self.x > t.x2 || self.y < t.y1
     }
 }
 
