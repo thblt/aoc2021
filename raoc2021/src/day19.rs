@@ -268,8 +268,8 @@ fn read_input(file: &str) -> Vec<Vec<Coord>> {
 start = false
         } else if line.is_empty() {
             start = true;
-            ret.push(current);
-            current = vec![];
+                ret.push(current);
+                current = vec![];
         } else {
             let parts: Vec<i32> = line.split(",").map(|l| l.parse::<i32>().unwrap()).collect();
             current.push(Coord {
@@ -280,14 +280,7 @@ start = false
             });
         }
     }
-    ret
-}
-
-/// Transform a vec of coords to all possible coordinate systems
-/// transformations.
-fn demultiply(cs: &Vec<Coord>) -> Vec<Vec<Coord>> {
-    let mut ret: Vec<Vec<Coord>> = vec![];
-
+    ret.push(current);
     ret
 }
 
@@ -314,7 +307,6 @@ fn dump_input(input: &Vec<Vec<Coord>>) {
 }
 
 fn store_equiv(db: &mut Vec<HashSet<(usize, usize)>>, a: (usize, usize), b: (usize, usize)) {
-    // println!("Storing that {:?} and {:?} are the same", a, b);
     for mut set in &mut db.into_iter() {
         if set.contains(&a) {
             set.insert(b);
@@ -339,11 +331,12 @@ fn main() {
     let mut equivs: Vec<HashSet<(usize, usize)>> = vec![];
 
     for i in 0..input.len() {
+        println!("Scanner {} has seen {} objects", i, input[i].len());
         for j in i+1..input.len() {
-            let dists_0 = pair_distances(&input[i]);
-            let dists_0_only: Vec<&(i32, i32, i32)> = dists_0.keys().collect();
+                let dists_0 = pair_distances(&input[i]);
+                let dists_0_only: Vec<&(i32, i32, i32)> = dists_0.keys().collect();
 
-            best = 11;
+            best = 5;
             for cs in CoordSystem::all() {
                 let dists = pair_distances(&input[j].iter().map(|c| c.translate(cs)).collect());
                 let intersection: Vec<(i32, i32, i32)> = dists
@@ -352,16 +345,22 @@ fn main() {
                     .map(|v| *v)
                     .collect();
 
-                if intersection.len() > best {
-                    best = intersection.len();
-                    best_keys = intersection.clone();
-                    best_dists = dists.clone();
-                    best_cs = cs;
+                let mut set: HashSet<usize> = HashSet::new();
+                for p in &intersection {
+                    set.insert(dists_0[&p].0);
+                    set.insert(dists_0[&p].1);
                 }
+
+                if set.len() > best {
+                    best = set.len();
+                    best_keys = intersection.clone();
+                        best_dists = dists.clone();
+                        best_cs = cs;
+                    }
             }
     if best > 11 {
         println!(
-            "Scanner {} against {} translated to {}, {} potential common pairs:",
+            "Scanner {} against {} translated to {}, {} common objects.",
             i, j, best_cs, best
         );
         for k in &best_keys {
