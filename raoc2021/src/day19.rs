@@ -323,7 +323,22 @@ fn store_equiv(db: &mut Vec<HashSet<(usize, usize)>>, a: (usize, usize), b: (usi
 }
 
 fn main() {
-    let input = read_input("../inputs/19-short.txt");
+    // Method.  The goal is to merge objects from all scanners into scanner 0.
+    //
+    //  - Traverse all possible scanner pairs until we find a pair
+    //  (A,B) with at least twelve overlapping objects.
+    //
+    //  - Translate coordinates in B to A (that is, take any
+    //  overlapping object, substract its coordinates in A to those in
+    //  B, add the result to all coordinates of objects in B) and
+    //  merge the two lists in one, A, removing duplicates.  Clear
+    //  list B and remove it.
+    //
+    // - Restart at beginning until there's only one list remaining.
+    //
+    // - Count objects in list for part 1.
+    //
+    let input = read_input("../inputs/19.txt");
     let mut best;
     let mut best_cs = CoordSystem::default();
     let mut best_dists: HashMap<(i32, i32, i32), (usize, usize)> = HashMap::new();
@@ -332,11 +347,10 @@ fn main() {
 
     for i in 0..input.len() {
         println!("Scanner {} has seen {} objects", i, input[i].len());
+        let dists_0 = pair_distances(&input[i]);
+        let dists_0_only: Vec<&(i32, i32, i32)> = dists_0.keys().collect();
         for j in i+1..input.len() {
-                let dists_0 = pair_distances(&input[i]);
-                let dists_0_only: Vec<&(i32, i32, i32)> = dists_0.keys().collect();
-
-            best = 5;
+            best = 11;
             for cs in CoordSystem::all() {
                 let dists = pair_distances(&input[j].iter().map(|c| c.translate(cs)).collect());
                 let intersection: Vec<(i32, i32, i32)> = dists
@@ -360,7 +374,7 @@ fn main() {
             }
     if best > 11 {
         println!(
-            "Scanner {} against {} translated to {}, {} common objects.",
+            "Scanners {} and {}, the latter interpreted in {}, share {} common objects.",
             i, j, best_cs, best
         );
         for k in &best_keys {
