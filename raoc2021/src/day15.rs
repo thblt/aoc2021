@@ -142,8 +142,8 @@ impl<E: Copy + Eq + PartialEq + Hash + PartialOrd + Debug> Graph<E> {
 fn multiply_input(vec: &Vec2D<u8>) -> Vec2D<u8> {
     let w1 = vec.width() as isize;
     let h1 = vec.height() as isize;
-    let w2 = w1 * 5 as isize;
-    let h2 = h1 * 5 as isize;
+    let w2 = w1 * 5_isize;
+    let h2 = h1 * 5_isize;
     let mut ret = Vec2D::<u8>::new(w2 as usize, h2 as usize, 0);
 
     for x in 0..w2 {

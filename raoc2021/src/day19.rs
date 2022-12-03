@@ -292,7 +292,6 @@ fn read_input(file: &str) -> Vec<HashSet<Coord>> {
     ret
 }
 
-
 fn pair_distances(cs: &HashSet<Coord>) -> HashMap<(i32, i32, i32), (Coord, Coord)> {
     let mut ret: HashMap<(i32, i32, i32), (Coord, Coord)> = HashMap::new();
     for a in cs {
@@ -301,7 +300,6 @@ fn pair_distances(cs: &HashSet<Coord>) -> HashMap<(i32, i32, i32), (Coord, Coord
                 ret.insert(a.sub(b), (*a, *b));
             }
         }
-
     }
     ret
 }
@@ -335,20 +333,22 @@ fn store_equiv(db: &mut Vec<HashSet<(Coord, Coord)>>, a: (Coord, Coord), b: (Coo
 }
 
 /// Merge FROM into TO, draining FROM, adding TRANS first.
-fn merge(to: &mut HashSet<Coord>, from: &HashSet<Coord>, trans: (i32,i32,i32), cs: CoordSystem) {
-    println!("MERGE init sum {}+{}={}", from.len(), to.len(), from.len() + to.len());
+fn merge(to: &mut HashSet<Coord>, from: &HashSet<Coord>, trans: (i32, i32, i32), cs: CoordSystem) {
+    // println!("MERGE init sum {}+{}={}", from.len(), to.len(), from.len() + to.len());
     for c in from {
         let mut c = c.clone();
         c.add(trans);
         c.system = cs;
         to.insert(c);
     }
-    println!("DONE final sum {}", to.len());
+    // println!("DONE final sum {}", to.len());
 }
 
 fn vec_inter<T>(mut a: Vec<T>, mut b: Vec<T>) -> Vec<T>
-where T: Copy + Eq + PartialOrd + Ord {
-    let mut ret: Vec<T> = vec!();
+where
+    T: Copy + Eq + PartialOrd + Ord,
+{
+    let mut ret: Vec<T> = vec![];
     a.sort();
     b.sort();
     let mut ia = 0;
@@ -361,14 +361,14 @@ where T: Copy + Eq + PartialOrd + Ord {
                 ia += 1;
                 ib += 1;
             }
-            Less =>  {
+            Less => {
                 ia += 1;
             }
             Greater => {
                 ib += 1;
             }
         }
-        }
+    }
 
     ret
 }
@@ -390,74 +390,71 @@ fn main() {
     // - Count objects in list for part 1.
     //
     let mut input = read_input("../inputs/19.txt");
-    let mut best;
     let mut best_cs = CoordSystem::default();
     let mut best_dists: HashMap<(i32, i32, i32), (Coord, Coord)> = HashMap::new();
-    let mut best_keys: Vec<(i32, i32, i32)> = vec!();
+    let mut best_keys: Vec<(i32, i32, i32)> = vec![];
     let mut objects: HashSet<Coord> = HashSet::new();
-    let mut best_all_objects: HashSet<Coord> = HashSet::new();
-
+    let mut all_objects: HashSet<Coord> = HashSet::new();
+    let mut scanner_dists: Vec<Coord> = vec![];
 
     let mut keep_going = true;
     while keep_going {
+        println!("STEP");
         keep_going = false;
         for i in 0..input.len() {
-            println!("Scanner {} has seen {} objects", i, input[i].len());
+            // println!("Scanner {} has seen {} objects", i, input[i].len());
             let dists_0 = pair_distances(&input[i]);
             let dists_0_only: Vec<(i32, i32, i32)> = dists_0.keys().map(|c| *c).collect();
-            for j in i+1..input.len() {
-                best = 11;
+            for j in i + 1..input.len() {
                 for cs in CoordSystem::all() {
-                    // println!("Trying {}", cs);
-                    let all_objects = input[j].iter().map(|c| c.translate(cs)).collect::<HashSet<Coord>>();
+                    let all_objects = input[j]
+                        .iter()
+                        .map(|c| c.translate(cs))
+                        .collect::<HashSet<Coord>>();
                     let dists = pair_distances(&all_objects);
-                    let intersection: Vec<(i32, i32, i32)> =
-                    vec_inter(dists
-                              .keys()
-                              .map(|c| *c)
-                              .collect::<Vec<(i32,i32,i32)>>()
-                              , dists_0_only.clone());
+                    let intersection: Vec<(i32, i32, i32)> = vec_inter(
+                        dists.keys().map(|c| *c).collect::<Vec<(i32, i32, i32)>>(),
+                        dists_0_only.clone(),
+                    );
 
-                // println!("On scanner {}: {:?}", i, dists_0_only);
-                // println!("On scanner {}: {:?}", j, dists.keys().collect::<Vec<&(i32,i32,i32)>>());
+                    objects.clear();
+                    for p in &intersection {
+                        objects.insert(dists_0[&p].0);
+                        objects.insert(dists_0[&p].1);
+                    }
 
-                // std::process::exit(0);
+                    // println!("{}", objects.len());
+                    if objects.len() > 11 {
+                        let left = dists_0[&intersection[0]].0;
+                        let mut right = dists[&intersection[0]].0;
+                        let trans = left.sub(&right);
 
-                objects.clear();
-                for p in &intersection {
-                    objects.insert(dists_0[&p].0);
-                    objects.insert(dists_0[&p].1);
+                        let c = Coord::new(trans.0, trans.1, trans.2);
+                        if !scanner_dists.contains(&c) {
+                            scanner_dists.push(c);
+                            keep_going = true;
+                        }
+                        println!("{} -> {} = {:?}", i, j, trans);
+
+                        // merge(&mut input[i], &best_all_objects, trans, left.system);
+                        break;
+                    }
                 }
-
-                // println!("Pairs in 0: {} Intersection size: {}; Common objecs:{}", dists_0_only.len(), intersection.len(), objects.len());
-
-                if objects.len() > best {
-                    best = objects.len();
-                    best_keys = intersection.clone();
-                    best_dists = dists.clone();
-                    best_cs = cs;
-                    best_all_objects = all_objects;
-                }
-            }
-
-            if best > 11 {
-                println!(
-                    "Scanners {} and {}, the latter interpreted in {}, share {} common objects.",
-                    i, j, best_cs, best
-                );
-                let left = dists_0[&best_keys[0]].0;
-                let mut right = best_dists[&best_keys[0]].0;
-                let trans = left.sub(&right);
-
-                merge(&mut input[i], &best_all_objects, trans, left.system);
-                input[j].clear();
-                keep_going = true;
-            }
-
             }
         }
     }
-    println!("{}", input[0].len());
 
-    // println!("Total: {:?}", equivs.len());
+    let mut best = 0;
+    for left in &scanner_dists {
+        for right in &scanner_dists {
+            let dist =
+            // left.a.abs() + left.b.abs() + left.c.abs();
+            abs_diff(left.a, right.a) + abs_diff(left.b, right.b) + abs_diff(left.c, right.c);
+        if dist > best {
+            best = dist;
+        }
+    }
+}
+
+    println!("Manhattan max: {:?}", best);
 }
