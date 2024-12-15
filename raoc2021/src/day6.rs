@@ -1,7 +1,7 @@
 use std::fs;
 
 fn make_state(raw: &[u64]) -> Vec<u64> {
-    let mut ret = vec![0,0,0,0,0,0,0,0,0];
+    let mut ret = vec![0, 0, 0, 0, 0, 0, 0, 0, 0];
     for fish in raw {
         ret[*fish as usize] += 1;
     }
@@ -16,17 +16,17 @@ fn part_b(days: u64) -> u64 {
     // let raw = String::from("3,4,3,1,2");
     let raw = fs::read_to_string("../inputs/6.txt").unwrap();
 
-    let mut state = make_state(&raw
-                               .split(",")
-                               .map(|x|
-                                    x.trim().parse::<u64>().unwrap())
-                               .collect::<Vec<u64>>());
+    let mut state = make_state(
+        &raw.split(",")
+            .map(|x| x.trim().parse::<u64>().unwrap())
+            .collect::<Vec<u64>>(),
+    );
 
-    for day in 1..=days {
+    for _ in 1..=days {
         let zeros = state[0];
         for i in 1..9 {
             // println!("Working at {}", i);
-            state[i-1] = state[i];
+            state[i - 1] = state[i];
         }
         // zeros have become 6s, and have made 8s
         state[6] += zeros;
@@ -43,7 +43,10 @@ fn part_a(days: u64) -> u64 {
     let raw = fs::read_to_string("../inputs/6.txt").unwrap();
     // let raw = String::from("3,4,3,1,2");
 
-    let mut state: Vec<u64> = raw.split(",").map(|x| x.trim().parse::<u64>().unwrap()).collect();
+    let mut state: Vec<u64> = raw
+        .split(",")
+        .map(|x| x.trim().parse::<u64>().unwrap())
+        .collect();
 
     fn evolve(s: u64) -> u64 {
         if s > 0 {
@@ -53,10 +56,10 @@ fn part_a(days: u64) -> u64 {
         }
     }
 
-    for i in 1..=days {
+    for _ in 1..=days {
         let children = state.clone().into_iter().filter(|x| *x == 0).count();
         state = state.into_iter().map(&evolve).collect();
-        for i in 0..children {
+        for _ in 0..children {
             state.push(8);
         }
         // println!("After {} days: {:?}, count {}", i,
