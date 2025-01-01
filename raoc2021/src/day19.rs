@@ -1,12 +1,18 @@
-// Bon, ce truc de modification de position signifie simplement que
-// pour chaque scanner, l'ordre des coordonnées x,y,z est variable (il
-// y a six ordre possible: xyz xzy yxz yzx zxy zyx) et chaque axe peut
-// être inversé, ie +4 peut être -4.
-//
-// Si un scanner est un cube, il peut avoir n'importe laquelle de ses
-// six faces en haut, et à partir de ces six positions de départ,
-// subir quatre rotations selon l'axe vertical.
+/* This is excessively brute-force, but it works.
+ *
+ * Part 1 could really use some optimizations.
+ *
+ * For part 2, we simply insert another beacon at 0,0,0 relative to
+ * each scanner, with a special tag (that's the `scanner` field in
+ * `Coord`) to identify them.  At the end of part 1, these
+ * pseudo-beacons will have been translated to the position of each
+ * other scanner, relative to scanner 0.
+ *
+ * For part 2, we then collect back those pseudo-beacons (identified
+ *  by their tag and compute their Manhattan distance.
+ */
 
+use std::cmp::max;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 
@@ -121,13 +127,6 @@ impl CoordSystem {
         }
     }
 
-    /// Like rotate(), but returns a new CoordSystem.
-    fn rotated(&self, along: Axis, forward: bool) -> CoordSystem {
-        let mut ret = self.clone();
-        ret.rotate(along, forward);
-        ret
-    }
-
     fn get_axis_sign(&self, axis: Axis) -> bool {
         if self.axis_1 == axis {
             self.axis_1_sign
@@ -189,6 +188,7 @@ struct Coord {
     b: i32,
     c: i32,
     system: CoordSystem,
+    scanner: bool,
 }
 
 impl Coord {
@@ -198,6 +198,7 @@ impl Coord {
             b,
             c,
             system: CoordSystem::default(),
+            scanner: false,
         }
     }
 
@@ -236,6 +237,7 @@ impl Coord {
             b: 0,
             c: 0,
             system: to,
+            scanner: self.scanner,
         };
         ret.set_axis(X, if minus_x { -x } else { x });
         ret.set_axis(Y, if minus_y { -y } else { y });
@@ -266,8 +268,15 @@ impl Display for Coord {
 
 fn read_input(file: &str) -> Vec<HashSet<Coord>> {
     let mut ret: Vec<HashSet<Coord>> = vec![];
-    let mut current: HashSet<Coord> = HashSet::new();
     let mut start = true;
+    let template: HashSet<Coord> = HashSet::from_iter([Coord {
+        a: 0,
+        b: 0,
+        c: 0,
+        system: CoordSystem::default(),
+        scanner: true,
+    }]);
+    let mut current = template.clone();
 
     for line in read_lines(file).unwrap() {
         let line = line.unwrap();
@@ -277,7 +286,7 @@ fn read_input(file: &str) -> Vec<HashSet<Coord>> {
         } else if line.is_empty() {
             start = true;
             ret.push(current);
-            current = HashSet::new();
+            current = template.clone();
         } else {
             let parts: Vec<i32> = line.split(",").map(|l| l.parse::<i32>().unwrap()).collect();
             current.insert(Coord {
@@ -285,6 +294,7 @@ fn read_input(file: &str) -> Vec<HashSet<Coord>> {
                 b: parts[1],
                 c: parts[2],
                 system: CoordSystem::default(),
+                scanner: false,
             });
         }
     }
@@ -304,46 +314,18 @@ fn pair_distances(cs: &HashSet<Coord>) -> HashMap<(i32, i32, i32), (Coord, Coord
     ret
 }
 
-fn dump_input(input: &Vec<Vec<Coord>>) {
-    for s in 0..input.len() {
-        if s > 0 {
-            println!();
-        }
-        println!("--- scanner {} ---", s);
-        for b in &input[s] {
-            println!("{},{},{}", b.a, b.b, b.c);
-        }
-    }
-}
-
-fn store_equiv(db: &mut Vec<HashSet<(Coord, Coord)>>, a: (Coord, Coord), b: (Coord, Coord)) {
-    for mut set in &mut db.into_iter() {
-        if set.contains(&a) {
-            set.insert(b);
-            return;
-        } else if set.contains(&b) {
-            set.insert(a);
-            return;
-        }
-    }
-    let mut new = HashSet::new();
-    new.insert(a);
-    new.insert(b);
-    db.push(new);
-}
-
 /// Merge FROM into TO, draining FROM, adding TRANS first.
 fn merge(to: &mut HashSet<Coord>, from: &HashSet<Coord>, trans: (i32, i32, i32), cs: CoordSystem) {
     // println!("MERGE init sum {}+{}={}", from.len(), to.len(), from.len() + to.len());
     for c in from {
-        let mut c = c.clone();
+        let mut c = *c;
         c.add(trans);
         c.system = cs;
         to.insert(c);
     }
-    // println!("DONE final sum {}", to.len());
 }
 
+/// Compute the intersection of two vectors.
 fn vec_inter<T>(mut a: Vec<T>, mut b: Vec<T>) -> Vec<T>
 where
     T: Copy + Eq + PartialOrd + Ord,
@@ -374,37 +356,35 @@ where
 }
 
 fn main() {
-    // Method.  The goal is to merge objects from all scanners into scanner 0.
+    // The goal is to merge objects from all scanners into scanner 0.
     //
     //  - Traverse all possible scanner pairs until we find a pair
-    //  (A,B) with at least twelve overlapping objects.
+    //    (A,B) with at least twelve overlapping objects.
     //
     //  - Translate coordinates in B to A (that is, take any
-    //  overlapping object, substract its coordinates in A to those in
-    //  B, add the result to all coordinates of objects in B) and
-    //  merge the two lists in one, A, removing duplicates.  Clear
-    //  list B and remove it.
+    //    overlapping object, substract its coordinates in A to those
+    //    in B, add the result to all coordinates of objects in B) and
+    //    merge the two lists in one, A, removing duplicates.  Clear
+    //    list B and remove it.
     //
-    // - Restart at beginning until there's only one list remaining.
-    //
-    // - Count objects in list for part 1.
-    //
+    //  - Restart at beginning until there's only one list remaining.
     let mut input = read_input("../inputs/19.txt");
-    let mut best_cs = CoordSystem::default();
-    let mut best_dists: HashMap<(i32, i32, i32), (Coord, Coord)> = HashMap::new();
-    let mut best_keys: Vec<(i32, i32, i32)> = vec![];
     let mut objects: HashSet<Coord> = HashSet::new();
-    let mut all_objects: HashSet<Coord> = HashSet::new();
     let mut scanner_dists: Vec<Coord> = vec![];
 
     let mut keep_going = true;
+    println!("There are {} scanners.", input.len());
+    println!(
+        "Default orientation: {}",
+        input[0].iter().next().unwrap().system
+    );
     while keep_going {
-        println!("STEP");
         keep_going = false;
+        // Outer loop: first traversal of scanners.
         for i in 0..input.len() {
-            // println!("Scanner {} has seen {} objects", i, input[i].len());
             let dists_0 = pair_distances(&input[i]);
-            let dists_0_only: Vec<(i32, i32, i32)> = dists_0.keys().map(|c| *c).collect();
+            let dists_0_only: Vec<(i32, i32, i32)> = dists_0.keys().copied().collect();
+            // Inner loop.  Other scanner.
             for j in i + 1..input.len() {
                 for cs in CoordSystem::all() {
                     let all_objects = input[j]
@@ -413,20 +393,19 @@ fn main() {
                         .collect::<HashSet<Coord>>();
                     let dists = pair_distances(&all_objects);
                     let intersection: Vec<(i32, i32, i32)> = vec_inter(
-                        dists.keys().map(|c| *c).collect::<Vec<(i32, i32, i32)>>(),
+                        dists.keys().copied().collect::<Vec<(i32, i32, i32)>>(),
                         dists_0_only.clone(),
                     );
 
                     objects.clear();
                     for p in &intersection {
-                        objects.insert(dists_0[&p].0);
-                        objects.insert(dists_0[&p].1);
+                        objects.insert(dists_0[p].0);
+                        objects.insert(dists_0[p].1);
                     }
 
-                    // println!("{}", objects.len());
                     if objects.len() > 11 {
                         let left = dists_0[&intersection[0]].0;
-                        let mut right = dists[&intersection[0]].0;
+                        let right = dists[&intersection[0]].0;
                         let trans = left.sub(&right);
 
                         let c = Coord::new(trans.0, trans.1, trans.2);
@@ -434,9 +413,9 @@ fn main() {
                             scanner_dists.push(c);
                             keep_going = true;
                         }
-                        println!("{} -> {} = {:?}", i, j, trans);
 
-                        // merge(&mut input[i], &best_all_objects, trans, left.system);
+                        merge(&mut input[i], &all_objects, trans, left.system);
+                        input[j].clear();
                         break;
                     }
                 }
@@ -444,17 +423,27 @@ fn main() {
         }
     }
 
-    let mut best = 0;
-    for left in &scanner_dists {
-        for right in &scanner_dists {
-            let dist =
-            // left.a.abs() + left.b.abs() + left.c.abs();
-            abs_diff(left.a, right.a) + abs_diff(left.b, right.b) + abs_diff(left.c, right.c);
-        if dist > best {
-            best = dist;
+    // Part 1 is total number of unique beacons, converted and added to the
+    // first scanner list, MINUS the number of scanners, because we've added one beacon
+    // per scanner at (0,0,0) for part 2.
+    println!("Part 1: {}", input[0].len() - input.len());
+    let scanners = input[0]
+        .iter()
+        .filter(|c| c.scanner)
+        .copied()
+        .collect::<Vec<Coord>>();
+
+    // Part 2 is just the max Manhattan distance between those beacons that have the `scanner` tag.
+    let mut part2 = 0;
+    for a in 0..scanners.len() {
+        for b in a + 1..scanners.len() {
+            let first = scanners[a];
+            let second = scanners[b];
+            let dist = (first.a - second.a).abs()
+                + (first.b - second.b).abs()
+                + (first.c - second.c).abs();
+            part2 = max(dist, part2);
         }
     }
-}
-
-    println!("Manhattan max: {:?}", best);
+    println!("Part 2: {part2}");
 }
