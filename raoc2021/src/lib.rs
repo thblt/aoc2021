@@ -4,9 +4,9 @@ use std::io::BufRead;
 use std::ops::{Index, IndexMut};
 use std::path::Path;
 
-#[derive (Clone)]
+#[derive(Clone)]
 pub struct Vec2D<T> {
-    pub vec:Vec<T>,
+    pub vec: Vec<T>,
     width: usize,
     height: usize,
 }
@@ -26,7 +26,6 @@ impl<T> Vec2D<T> {
     pub fn height(&self) -> usize {
         self.height
     }
-
 
     pub fn to_coords(&self, idx: usize) -> (isize, isize) {
         let x = (idx % self.width) as isize;
@@ -155,7 +154,7 @@ pub fn read_digit(c: char) -> u8 {
 }
 
 use std::ops::Sub;
-pub fn abs_diff<T: Copy + Ord + Sub>(a: T, b: T) -> <T as Sub>::Output  {
-    use std::cmp::{min,max};
-    max(a, b) - min (a, b)
+pub fn abs_diff<T: Copy + Ord + Sub>(a: T, b: T) -> <T as Sub>::Output {
+    use std::cmp::{max, min};
+    max(a, b) - min(a, b)
 }

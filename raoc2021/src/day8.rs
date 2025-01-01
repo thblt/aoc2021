@@ -149,31 +149,6 @@ fn solve(patterns: &[u8], puzzle: &[u8]) -> u32 {
     seg_g = seg_g & !seg_a;
     seg_g = seg_g & !seg_d;
 
-    // println!(
-    //     "
-    // seg_a = {:08b} {}
-    // seg_b = {:08b} {}
-    // seg_c = {:08b} {}
-    // seg_d = {:08b} {}
-    // seg_e = {:08b} {}
-    // seg_f = {:08b} {}
-    // seg_g = {:08b} {}",
-    //     seg_a,
-    //     count_bits(&seg_a),
-    //     seg_b,
-    //     count_bits(&seg_b),
-    //     seg_c,
-    //     count_bits(&seg_c),
-    //     seg_d,
-    //     count_bits(&seg_d),
-    //     seg_e,
-    //     count_bits(&seg_e),
-    //     seg_f,
-    //     count_bits(&seg_f),
-    //     seg_g,
-    //     count_bits(&seg_g),
-    // );
-
     // Part 2: solve the puzzle
 
     let mut total: u32 = 0;
@@ -253,15 +228,6 @@ fn parse(s: &str) -> Vec<u8> {
                 .filter(|item| [2, 3, 4, 7].contains(&item.len()))
                 .count();
         }
-        // print_mask(REPR_0);
-        // print_mask(REPR_1);
-        // print_mask(REPR_2);
-        // print_mask(REPR_3);
-        // print_mask(REPR_4);
-        // print_mask(REPR_5);
-        // print_mask(REPR_6);
-        // print_mask(REPR_7);
-        // print_mask(REPR_8);
-        // print_mask(REPR_9);
+
         println!("Part A: {}\nPart B: {}", count, sum)
     }
