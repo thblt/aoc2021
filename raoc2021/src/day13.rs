@@ -1,6 +1,6 @@
 use lib::*;
+use std::cmp::{max, min};
 use std::str::FromStr;
-use std::cmp::{max,min};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum FoldAxis {
@@ -28,21 +28,23 @@ fn print_bool(b: &bool) -> String {
 
 fn fold(paper: &mut Vec2D<bool>, fold: &Fold) {
     let i = fold.i;
-    if fold.axis == FoldAxis::X { // Horizontal
-        let count: isize = min(i+1, paper.width() as isize - i);
-        for d in 1..count{
+    if fold.axis == FoldAxis::X {
+        // Horizontal
+        let count: isize = min(i + 1, paper.width() as isize - i);
+        for d in 1..count {
             for y in 0..paper.height() as isize {
                 // println!("i={}, d={}, y={}, count={}", i, d, y, count);
-                paper[(i-d,y)] |= paper[(i+d,y)];
-                paper[(i+d,y)] = false;
+                paper[(i - d, y)] |= paper[(i + d, y)];
+                paper[(i + d, y)] = false;
             }
         }
-    } else if fold.axis == FoldAxis::Y { // Vertical
-        let count: isize = min(i+1, paper.height() as isize - i);
-        for d in 1..count{
+    } else if fold.axis == FoldAxis::Y {
+        // Vertical
+        let count: isize = min(i + 1, paper.height() as isize - i);
+        for d in 1..count {
             for x in 0..paper.width() as isize {
-                paper[(x, i-d)] |= paper[(x,i+d)];
-                paper[(x, i+d)] = false;
+                paper[(x, i - d)] |= paper[(x, i + d)];
+                paper[(x, i + d)] = false;
             }
         }
     }
@@ -95,7 +97,7 @@ fn main() {
         }
     }
     fold(&mut paper, &folds[0]);
-    println!("Part 1: {}", &paper.vec.iter().filter(|b|**b).count());
+    println!("Part 1: {}", &paper.vec.iter().filter(|b| **b).count());
     for fld in folds.iter().skip(1) {
         println!("Folding {:?}", &fld);
         fold(&mut paper, &fld);
@@ -105,7 +107,7 @@ fn main() {
     // This is VERY hacky
     for x in 0..200 {
         for y in 0..200 {
-            print!("{}", if paper[(x,y)] { "▉" } else {" "})
+            print!("{}", if paper[(x, y)] { "▉" } else { " " })
         }
         println!();
     }

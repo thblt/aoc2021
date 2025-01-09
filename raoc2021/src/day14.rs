@@ -26,7 +26,7 @@
 use lib::*;
 use std::collections::HashMap;
 
-type Pair = (u8,u8);
+type Pair = (u8, u8);
 /// A state is simply a count of pairs (we don't preserve structure)
 type State = HashMap<Pair, u64>;
 type Rules = HashMap<Pair, u8>;
@@ -44,8 +44,8 @@ fn compute() -> u64 {
 
     // We break the initial state into pairs.
     let mut state: State = State::new();
-    for i in 0..raw_state.len()-1 {
-        let key = (raw_state[i],raw_state[i+1]);
+    for i in 0..raw_state.len() - 1 {
+        let key = (raw_state[i], raw_state[i + 1]);
         maybe_init(&mut state, key);
         *state.get_mut(&key).unwrap() += 1;
     }
@@ -64,7 +64,7 @@ fn compute() -> u64 {
     }
     let count = count_elems(&state_last, *first, *last);
     print_count(&count);
-    count.values().max().unwrap()-count.values().min().unwrap()
+    count.values().max().unwrap() - count.values().min().unwrap()
 }
 
 fn evolve(prev: &State, next: &mut State, rules: &Rules) {
@@ -74,33 +74,33 @@ fn evolve(prev: &State, next: &mut State, rules: &Rules) {
     }
 
     // Then, we iterate over the previous map.
-    for (pair@(l, r), count) in prev {
+    for (pair @ (l, r), count) in prev {
         // @FIXME This is nitpicking, but that rules.get() in a loop
         // could probably be optimized away, eg by having the rule map
         // *and* the pairs map be defined for all possible pairs ---
         // there's just 100 of them.
-        if let Some(new) =  rules.get(&pair) {
-            maybe_init(next, (*l,*new));
-            *next.get_mut(&(*l,*new)).unwrap() += count;
-            maybe_init(next, (*new,*r));
-            *next.get_mut(&(*new,*r)).unwrap() += count;
+        if let Some(new) = rules.get(&pair) {
+            maybe_init(next, (*l, *new));
+            *next.get_mut(&(*l, *new)).unwrap() += count;
+            maybe_init(next, (*new, *r));
+            *next.get_mut(&(*new, *r)).unwrap() += count;
         } else {
             *next.get_mut(&pair).unwrap() += count;
         }
     }
 }
 
-fn count_elems(state: &State, first: u8, last: u8) -> Count{
+fn count_elems(state: &State, first: u8, last: u8) -> Count {
     let mut ret: Count = Count::new();
     ret.insert(first, 1);
     ret.insert(last, 1);
-    for ((l,r), count) in state {
+    for ((l, r), count) in state {
         // Fully process left, then right, in case left==right.
         let l_count: u64 = *ret.get(l).unwrap_or(&0);
-        ret.insert(*l, count+l_count);
+        ret.insert(*l, count + l_count);
         // Right
         let r_count: u64 = *ret.get(r).unwrap_or(&0);
-        ret.insert(*r, count+r_count);
+        ret.insert(*r, count + r_count);
     }
     for v in ret.values_mut() {
         *v /= 2
@@ -109,7 +109,7 @@ fn count_elems(state: &State, first: u8, last: u8) -> Count{
 }
 
 fn print_count(count: &Count) {
-    for (k,v) in count.iter() {
+    for (k, v) in count.iter() {
         println!("{} = {}", show1(k), v);
     }
 }
@@ -121,9 +121,9 @@ fn maybe_init(state: &mut State, key: Pair) {
 }
 
 /// The input "parser".
-fn read_input() -> (Vec<u8>,Rules) {
+fn read_input() -> (Vec<u8>, Rules) {
     let mut input = read_lines("../inputs/14.txt").unwrap();
-    let mut rules: HashMap<(u8,u8),u8> = HashMap::new();
+    let mut rules: HashMap<(u8, u8), u8> = HashMap::new();
 
     // Read initial state
     let state = input.next().unwrap().unwrap().into_bytes();
@@ -137,29 +137,29 @@ fn read_input() -> (Vec<u8>,Rules) {
         rules.insert(pair, new);
     }
 
-    (state,rules)
+    (state, rules)
 }
 
 ///////////////////////////////////////////////////////////////////////
 // STUPID FIRST VERSION (PART 1) //////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-fn stupid_evolve(state: &[u8], rules: &HashMap<(u8,u8),u8>) -> Vec<u8> {
+fn stupid_evolve(state: &[u8], rules: &HashMap<(u8, u8), u8>) -> Vec<u8> {
     let mut ret: Vec<u8> = vec![state[0]];
 
-    for i in 0..state.len()-1 {
+    for i in 0..state.len() - 1 {
         // ret.push(state[i]);
-        if let Some(x) = rules.get(&(state[i], state[i+1])) {
+        if let Some(x) = rules.get(&(state[i], state[i + 1])) {
             ret.push(*x);
         }
-        ret.push(state[i+1]);
+        ret.push(state[i + 1]);
     }
     ret
 }
 
 fn stupid_compute() {
     let mut input = read_lines("../inputs/14.txt").unwrap();
-    let mut rules: HashMap<(u8,u8),u8> = HashMap::new();
+    let mut rules: HashMap<(u8, u8), u8> = HashMap::new();
 
     // Read initial state
     let mut state = input.next().unwrap().unwrap().into_bytes();
@@ -180,7 +180,7 @@ fn stupid_compute() {
     state.sort();
     let mut current = state[0];
     let mut count = 0;
-    let mut counts = vec!();
+    let mut counts = vec![];
     for b in state {
         if b == current {
             count += 1
@@ -191,7 +191,10 @@ fn stupid_compute() {
         }
     }
     counts.push(count);
-    println!("{}", counts.iter().max().unwrap()-counts.iter().min().unwrap());
+    println!(
+        "{}",
+        counts.iter().max().unwrap() - counts.iter().min().unwrap()
+    );
 }
 
 ///////////////////////////////////////////////////////////////////////

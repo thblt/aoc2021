@@ -221,14 +221,14 @@ fn legal_moves(graph: &[Node]) -> Vec<(usize, usize)> {
         // why we can say "occupant as usize"
         if can_move(graph, start_node, occupant as usize) {
             // We MUST do final moves as soon as we can.
-                return vec![(start_node, occupant as usize)];
+            return vec![(start_node, occupant as usize)];
         } else {
             for cand_dest in 4..graph.len() {
                 if can_move(graph, start_node, cand_dest) {
                     ret.push((start_node, cand_dest));
                 }
             }
-            }
+        }
     }
     // ret.sort_by_key(|(s,d)| graph[*s].edges[*d].cost);
     ret
@@ -240,7 +240,7 @@ fn do_move(graph: &mut [Node], from: usize, dest: usize) -> u64 {
     // Cost of that motion
     let mut cost = amphipod.energy() * graph[from].edges[dest].cost;
 
-        // If we enter the end of an hallway, and an amphipod as already
+    // If we enter the end of an hallway, and an amphipod as already
     // present, we push it to the back of the hallway.  We thus add
     // two steps of *its* energy to the total cost, and mark that
     // we've handled it to avoid double counts (it may have already
@@ -270,8 +270,6 @@ fn do_move(graph: &mut [Node], from: usize, dest: usize) -> u64 {
         graph[dest].occupants.push(amphipod);
     }
     cost
-
-
 }
 
 fn best_hope(graph: &[Node]) -> u64 {
@@ -294,7 +292,7 @@ fn play(graph: Vec<Node>, base_cost: u64, best_cost: &mut u64) {
         if base_cost < *best_cost {
             *best_cost = base_cost
         }
-        return
+        return;
     }
 
     for (start, dest) in legal_moves(&graph) {
@@ -321,15 +319,16 @@ fn prepare(graph: &mut [Node]) -> u64 {
             .occupants
             .iter()
             .map(|amph| (amph, (*amph) as usize))
-            .enumerate() {
-                // Energy this amphipod will spent going as deep
-                // as possible in its EXIT room.
-                ret += amph.energy() * counts[amph_num];
-                counts[amph_num] += 1;
-                // Extra energy this amphipod will spent by leaving
-                // this room
-                ret += (occupation - nth - 1) as u64 * amph.energy();
-            }
+            .enumerate()
+        {
+            // Energy this amphipod will spent going as deep
+            // as possible in its EXIT room.
+            ret += amph.energy() * counts[amph_num];
+            counts[amph_num] += 1;
+            // Extra energy this amphipod will spent by leaving
+            // this room
+            ret += (occupation - nth - 1) as u64 * amph.energy();
+        }
     }
     ret
 }

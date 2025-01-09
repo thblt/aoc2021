@@ -59,8 +59,6 @@ impl GameTree {
             // let mut next3 = of.clone();
             // next3.roll(3);
             // let r3 = Self::build(&next3);
-
-
         }
         ret
     }
@@ -83,11 +81,11 @@ impl GameTree {
                 p1_wins += p1;
                 p2_wins += p2;
             }
-        } else  if self.node.p1_score >= DIRAC_WINNING_SCORE {
+        } else if self.node.p1_score >= DIRAC_WINNING_SCORE {
             p1_wins += self.node.universes;
-            } else {
-                p2_wins += self.node.universes;
-            }
+        } else {
+            p2_wins += self.node.universes;
+        }
         (p1_wins, p2_wins)
     }
 }
@@ -216,8 +214,11 @@ fn main_dirac() {
     // Computing the game tree.
     let game: GameTree = GameTree::new(4, 7);
     // game.print();
-    let (p1_wins, p2_wins) = game.count_wins(0,0);
-    println!("Challenge result (dirac): {}", std::cmp::max(p1_wins, p2_wins));
+    let (p1_wins, p2_wins) = game.count_wins(0, 0);
+    println!(
+        "Challenge result (dirac): {}",
+        std::cmp::max(p1_wins, p2_wins)
+    );
 }
 
 fn main() {

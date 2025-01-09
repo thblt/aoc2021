@@ -1,12 +1,13 @@
 use lib::*;
 
-fn a() -> (u32,u32) {
+fn a() -> (u32, u32) {
     let mut lines = read_lines("../inputs/4.txt").unwrap();
     let mut first: Option<u32> = None;
     let mut last: u32 = 0;
 
     // Read numbers
-    let numbers: Vec<u32> = lines.next()
+    let numbers: Vec<u32> = lines
+        .next()
         .expect("no line?")
         .expect("why?")
         .split(',')
@@ -39,9 +40,9 @@ fn a() -> (u32,u32) {
             if let Some(score) = grid_maybe_score(&g) {
                 grid_print(&g);
                 if first.is_none() {
-                    first = Some(score*num)
+                    first = Some(score * num)
                 }
-                last = score*num
+                last = score * num
             }
         }
     }
@@ -51,7 +52,7 @@ fn a() -> (u32,u32) {
 #[derive(Copy, Clone, Debug)]
 struct Cell {
     number: u32,
-    marked: bool
+    marked: bool,
 }
 
 type Grid = [Cell; 25];
@@ -80,14 +81,19 @@ fn grid_score(g: &Grid) -> u32 {
 fn grid_winning(g: &Grid) -> bool {
     // Check for colums
     for i in 0..4 {
-        if g[i].marked && g[i+5].marked && g[i+10].marked && g[i+15].marked && g[i+20].marked {
-            return true
+        if g[i].marked
+            && g[i + 5].marked
+            && g[i + 10].marked
+            && g[i + 15].marked
+            && g[i + 20].marked
+        {
+            return true;
         }
     }
     // Check for rows
-    for i in [0,5,10,15,20] {
-        if g[i].marked && g[i+1].marked && g[i+2].marked && g[i+3].marked && g[i+4].marked {
-            return true
+    for i in [0, 5, 10, 15, 20] {
+        if g[i].marked && g[i + 1].marked && g[i + 2].marked && g[i + 3].marked && g[i + 4].marked {
+            return true;
         }
     }
     false
@@ -101,7 +107,7 @@ fn grid_print(g: &Grid) {
 
         if g[i].marked {
             print!("[{:02}] ", g[i].number)
-        }else {
+        } else {
             print!(" {:02}  ", g[i].number)
         }
     }
@@ -119,14 +125,26 @@ fn grid_mark(g: &mut Grid, n: u32) {
 
 /// Parse a grid
 fn grid_parse(raw: String) -> Grid {
-    let mut ret: Grid = [Cell {number: 0, marked: false}; 25];
+    let mut ret: Grid = [Cell {
+        number: 0,
+        marked: false,
+    }; 25];
     let mut i: usize = 0;
 
-    for number in raw.split(' ').filter(|l| !l.is_empty()).map(|number| number.parse::<u32>().expect("no parse")) {
+    for number in raw
+        .split(' ')
+        .filter(|l| !l.is_empty())
+        .map(|number| number.parse::<u32>().expect("no parse"))
+    {
         println!("Got {}", number);
-        ret[i] = Cell { number, marked: false };
-        i+=1;
-        if i == 25 {break};
+        ret[i] = Cell {
+            number,
+            marked: false,
+        };
+        i += 1;
+        if i == 25 {
+            break;
+        };
     }
     println!("Parsed {}, Got:", raw);
     grid_print(&ret);

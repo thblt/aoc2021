@@ -10,7 +10,7 @@ const MASK_F: u8 = 32;
 const MASK_G: u8 = 64;
 
 // Digit representations.
-const REPR_0: u8 = MASK_A | MASK_B | MASK_C | MASK_E |  MASK_F | MASK_G;
+const REPR_0: u8 = MASK_A | MASK_B | MASK_C | MASK_E | MASK_F | MASK_G;
 const REPR_1: u8 = MASK_C | MASK_F;
 const REPR_2: u8 = MASK_A | MASK_C | MASK_D | MASK_E | MASK_G;
 const REPR_3: u8 = MASK_A | MASK_C | MASK_D | MASK_F | MASK_G;
@@ -63,7 +63,7 @@ fn read_segments(segments: u8) -> u8 {
         REPR_7 => 7,
         REPR_8 => 8,
         REPR_9 => 9,
-        _ => panic!("Bad segment combination")
+        _ => panic!("Bad segment combination"),
     }
 }
 
@@ -85,7 +85,7 @@ fn solve(patterns: &[u8], puzzle: &[u8]) -> u32 {
 
     // Return a mask of bit differences in three bytes.
     fn diff(a: &u8, b: &u8, c: &u8) -> u8 {
-        (a^b) | (a^c) | (b^c)
+        (a ^ b) | (a ^ c) | (b ^ c)
     }
 
     for item in patterns {
@@ -155,18 +155,32 @@ fn solve(patterns: &[u8], puzzle: &[u8]) -> u32 {
     for piece in puzzle {
         total *= 10;
         let mut pattern = 0;
-        if piece & seg_a != 0 { pattern |= MASK_A }
-        if piece & seg_b != 0 { pattern |= MASK_B }
-        if piece & seg_c != 0 { pattern |= MASK_C }
-        if piece & seg_d != 0 { pattern |= MASK_D }
-        if piece & seg_e != 0 { pattern |= MASK_E }
-        if piece & seg_f != 0 { pattern |= MASK_F }
-        if piece & seg_g != 0 { pattern |= MASK_G }
+        if piece & seg_a != 0 {
+            pattern |= MASK_A
+        }
+        if piece & seg_b != 0 {
+            pattern |= MASK_B
+        }
+        if piece & seg_c != 0 {
+            pattern |= MASK_C
+        }
+        if piece & seg_d != 0 {
+            pattern |= MASK_D
+        }
+        if piece & seg_e != 0 {
+            pattern |= MASK_E
+        }
+        if piece & seg_f != 0 {
+            pattern |= MASK_F
+        }
+        if piece & seg_g != 0 {
+            pattern |= MASK_G
+        }
 
         // print!("{}", )
         total += read_segments(pattern) as u32;
     }
-    println!("{}",total);
+    println!("{}", total);
     total
 }
 
@@ -183,20 +197,25 @@ fn char_to_mask(c: char) -> u8 {
     }
 }
 
-
 fn print_mask(m: u8) {
     fn c(cond: u8, s: &str) -> String {
-        if cond == 0 { " ".to_string() } else { s.to_string() }
+        if cond == 0 {
+            " ".to_string()
+        } else {
+            s.to_string()
+        }
     }
 
-    println!("   a \n  {} \nb{}   {}c\n d{} \ne{}   {}f\n g{}",
-             c(m&MASK_A, "━━━"),
-             c(m&MASK_B, "┃"),
-             c(m&MASK_C, "┃"),
-             c(m&MASK_D, "━━━"),
-             c(m&MASK_E, "┃"),
-             c(m&MASK_F, "┃"),
-             c(m&MASK_G, "━━━"));
+    println!(
+        "   a \n  {} \nb{}   {}c\n d{} \ne{}   {}f\n g{}",
+        c(m & MASK_A, "━━━"),
+        c(m & MASK_B, "┃"),
+        c(m & MASK_C, "┃"),
+        c(m & MASK_D, "━━━"),
+        c(m & MASK_E, "┃"),
+        c(m & MASK_F, "┃"),
+        c(m & MASK_G, "━━━")
+    );
 }
 
 fn parse(s: &str) -> Vec<u8> {
@@ -210,24 +229,24 @@ fn parse(s: &str) -> Vec<u8> {
         ret.push(val);
     }
     ret
+}
+
+fn main() {
+    let input = read_lines("../inputs/8.txt").unwrap();
+
+    let mut count = 0;
+    let mut sum = 0;
+    for line in input {
+        let parts: Vec<String> = line.unwrap().split(" | ").map(String::from).collect();
+
+        let patterns = parse(&parts[0]);
+        let puzzle = parse(&parts[1]);
+        sum += solve(&patterns, &puzzle);
+        count += parts[1]
+            .split(" ")
+            .filter(|item| [2, 3, 4, 7].contains(&item.len()))
+            .count();
     }
 
-    fn main() {
-        let input = read_lines("../inputs/8.txt").unwrap();
-
-        let mut count = 0;
-        let mut sum = 0;
-        for line in input {
-            let parts: Vec<String> = line.unwrap().split(" | ").map(String::from).collect();
-
-            let patterns = parse(&parts[0]);
-            let puzzle = parse(&parts[1]);
-            sum += solve(&patterns, &puzzle);
-            count += parts[1]
-                .split(" ")
-                .filter(|item| [2, 3, 4, 7].contains(&item.len()))
-                .count();
-        }
-
-        println!("Part A: {}\nPart B: {}", count, sum)
-    }
+    println!("Part A: {}\nPart B: {}", count, sum)
+}

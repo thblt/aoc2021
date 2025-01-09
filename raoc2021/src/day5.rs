@@ -143,14 +143,14 @@ fn run() -> u32 {
             let y2 = l.y2 as isize;
             let xdir: isize = if x1 > x2 { -1 } else { 1 };
             let ydir: isize = if y1 > y2 { -1 } else { 1 };
-            let dist = max(x1,x2) - min(x1,x2);
+            let dist = max(x1, x2) - min(x1, x2);
             // Diagonal line
             // println!("Drawing a diagonal line: {},{} -> {},{}", x1, y1, x2, y2);
             for i in 0..=dist {
-                let x: usize = (x1 + (xdir*i)) as usize;
-                let y: usize = (y1 + (ydir*i)) as usize;
+                let x: usize = (x1 + (xdir * i)) as usize;
+                let y: usize = (y1 + (ydir * i)) as usize;
                 // println!("Drawing at {},{}", x,y);
-                space[(x,y)] += 1;
+                space[(x, y)] += 1;
             }
         }
     }

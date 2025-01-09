@@ -81,7 +81,14 @@ impl Vec2D<u8> {
                 println!("");
             }
             let val = self.vec[i];
-            print!("{}", if val < 10 { val.to_string() } else { String::from("X") });
+            print!(
+                "{}",
+                if val < 10 {
+                    val.to_string()
+                } else {
+                    String::from("X")
+                }
+            );
         }
         println!("");
     }
@@ -135,8 +142,10 @@ fn explore_basin(map: &mut Vec2D<u8>, x: usize, y: usize, size: u32) -> u32 {
     } else {
         ret += 1;
         map[(x, y)] |= mark; // Mark our place.
-        println!("Point at {},{}, value is {}, size is now {}", x, y,
-                 value, size);
+        println!(
+            "Point at {},{}, value is {}, size is now {}",
+            x, y, value, size
+        );
         // map.draw();
     }
 
@@ -204,7 +213,10 @@ fn main() {
 
     basins.sort();
     println!("Basins {:?}", basins);
-    println!("Part 2: {:?}", basins.pop().unwrap()*basins.pop().unwrap()*basins.pop().unwrap());
+    println!(
+        "Part 2: {:?}",
+        basins.pop().unwrap() * basins.pop().unwrap() * basins.pop().unwrap()
+    );
 
     // To find basins, we iterate over the list of low points.
 }

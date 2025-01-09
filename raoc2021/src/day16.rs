@@ -10,28 +10,39 @@ impl Packet {
     fn eval(&self) -> u128 {
         match &self.payload {
             PacketData::Literal(value) => *value,
-            PacketData::Operator(operator) =>
-                match operator.op {
-                    Operation::Sum => operator.packets.iter().map(|p| p.eval()).sum(),
-                    Operation::Product => operator.packets.iter().map(|p| p.eval()).product(),
-                    Operation::Min => operator.packets.iter().map(|p| p.eval()).min().unwrap(),
-                    Operation::Max => operator.packets.iter().map(|p| p.eval()).max().unwrap(),
-                    Operation::Gt => {
-                        if operator.packets[0].eval() > operator.packets[1].eval() { 1 } else { 0 }
-                    },
-                    Operation::Lt => {
-                        if operator.packets[0].eval() < operator.packets[1].eval() { 1 } else { 0 }
-                    },
-                    Operation::Eq => {
-                        if operator.packets[0].eval() == operator.packets[1].eval() { 1 } else { 0 }
-                    },
+            PacketData::Operator(operator) => match operator.op {
+                Operation::Sum => operator.packets.iter().map(|p| p.eval()).sum(),
+                Operation::Product => operator.packets.iter().map(|p| p.eval()).product(),
+                Operation::Min => operator.packets.iter().map(|p| p.eval()).min().unwrap(),
+                Operation::Max => operator.packets.iter().map(|p| p.eval()).max().unwrap(),
+                Operation::Gt => {
+                    if operator.packets[0].eval() > operator.packets[1].eval() {
+                        1
+                    } else {
+                        0
+                    }
                 }
+                Operation::Lt => {
+                    if operator.packets[0].eval() < operator.packets[1].eval() {
+                        1
+                    } else {
+                        0
+                    }
+                }
+                Operation::Eq => {
+                    if operator.packets[0].eval() == operator.packets[1].eval() {
+                        1
+                    } else {
+                        0
+                    }
+                }
+            },
         }
     }
 
     fn dump(&self) -> u128 {
         self.do_dump(0)
-}
+    }
 
     fn do_dump(&self, depth: u32) -> u128 {
         let mut vsum = self.version as u128;
@@ -102,7 +113,7 @@ struct BitStream {
     /// The bit index in data[index], that is, how many bits we've
     /// read at the index.
     bit: usize,
-    read_counter: usize
+    read_counter: usize,
 }
 
 impl BitStream {

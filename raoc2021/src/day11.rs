@@ -15,9 +15,8 @@ fn flash(map: &mut Vec2D<u8>) -> u32 {
                     again = true;
                     for x2 in [-1, 0, 1] {
                         for y2 in [-1, 0, 1] {
-                            if map.test_coords(x+x2, y+y2)
-                            {
-                                map[(x+x2, y+y2)] += 1;
+                            if map.test_coords(x + x2, y + y2) {
+                                map[(x + x2, y + y2)] += 1;
                             }
                         }
                     }
@@ -35,7 +34,7 @@ fn flash(map: &mut Vec2D<u8>) -> u32 {
             *o = 0;
         }
     }
-    if flashes as usize == map.width()*map.height() {
+    if flashes as usize == map.width() * map.height() {
         println!("All flashed!");
     }
     flashes
@@ -68,7 +67,7 @@ fn main() {
     let mut map_b = map.clone();
 
     let mut flashes = 0;
-    let total = (width*height) as u32;
+    let total = (width * height) as u32;
 
     for _ in 0..100 {
         flashes += step(&mut map);

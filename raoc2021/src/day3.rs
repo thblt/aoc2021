@@ -31,7 +31,9 @@ fn day3fold<S: Into<String>>(
 /// isn't the most or least common.  Don't do anything is the list is
 /// of len 1.
 fn day3filter(list: &mut Vec<Vec<bool>>, i: usize, strategy: bool) {
-    if list.len() == 1 { return }
+    if list.len() == 1 {
+        return;
+    }
 
     let count = list.iter().filter(|v| v[i]).count();
     let mcv = (count * 2) >= list.len();
@@ -92,7 +94,7 @@ fn parse_bin_bools(n: &[bool]) -> u32 {
 fn day3b() -> u32 {
     let mut cands_g: Vec<Vec<bool>> = read_lines("../inputs/3.txt")
         .expect("no read")
-        .map(|s| s.unwrap().chars().map(|x| x=='1').collect())
+        .map(|s| s.unwrap().chars().map(|x| x == '1').collect())
         .collect();
 
     let mut cands_s = cands_g.clone();
@@ -117,7 +119,10 @@ fn day3b() -> u32 {
     let val_s = parse_bin_bools(&cands_s[0]);
     println!(
         "Done. g={} ({}), s={} ({})",
-        bools_to_bin_string(&cands_g[0]), val_g, bools_to_bin_string(&cands_s[0]), val_s
+        bools_to_bin_string(&cands_g[0]),
+        val_g,
+        bools_to_bin_string(&cands_s[0]),
+        val_s
     );
     val_g * val_s
 }
